@@ -1,4 +1,4 @@
-# iPresence Test Task
+# Quotes API Demo
 
 REST API that returns quotes shouted by famous persons.
 
