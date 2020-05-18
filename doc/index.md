@@ -139,7 +139,7 @@ Project will be executed in the following steps:
 - Prepare development environment ([DEVOPS1](https://github.com/evodevo/quotes_api/tree/master/doc/task_devops1.md))
 - Prepare test environment ([DEVOPS2](https://github.com/evodevo/quotes_api/tree/master/doc/task_devops2.md))
 - Initial project setup ([DEV1](https://github.com/evodevo/quotes_api/tree/master/doc/task_dev1.md))
-- Quotes shouting API User Story ([US1](https://github.com/evodevo/quotes_api/tree/master/doc/user_story1.md))
+- Quotes shouting API User Story ([US1](https://github.com/evodevo/quotes_api/tree/master/doc/user_story1.md)). 
     Tasks for the User Story US1:
     - Design system architecture ([DEV2](https://github.com/evodevo/quotes_api/tree/master/doc/task_dev2.md))
     - Develop quotes shouting API endpoint ([DEV3](https://github.com/evodevo/quotes_api/tree/master/doc/task_dev3.md))
