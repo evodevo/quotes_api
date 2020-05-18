@@ -7,11 +7,10 @@ implement caching layer for the shouted quotes. Caching layer architecture is pr
 [quotes_api.png](https://github.com/evodevo/quotes_api/tree/master/doc/quotes_api.png) diagram.  
 
 **Requirements:**
-- Data source should not be hit twice for the same author give a time T.
+- Data source should not be hit twice for the same author give a time interval of 60 seconds.
 - Caching of items should be done through RabbitMQ. Instead of directly writing to Redis, 
 a message should be sent to RabbitMQ, and there must be at least 2 workers reading from the 
-queue and storing the items in redis. 
-- Caching duration should be configurable and should have a default value of 60 seconds.
+queue and storing the items in redis.  
 
 **Constraints:**
 - Redis should be used as a cache storage. 
