@@ -30,7 +30,6 @@ in the makefile. It should be able to perform the following tasks:
 - destroy and recreate development database
 - execute database migrations
 - load project fixtures
-- run Behat tests
 - run phpspec tests
 - show the list of available commands (show help)
 
