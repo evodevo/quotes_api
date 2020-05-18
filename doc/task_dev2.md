@@ -14,4 +14,4 @@ should be maintained.
 - It should include components that implement requirements given in User Story 1
 - It should take into account that multiple quote data sources might be used
 
-**Deliverable:** system architecture diagram (quotes_api.png)
+**Deliverable:** system architecture diagram ([quotes_api.png](https://github.com/evodevo/quotes_api/tree/master/doc/quotes_api.png))
