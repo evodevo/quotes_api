@@ -1,0 +1,68 @@
+version: "2"
+services:
+  test-mysql:
+    container_name: test-mysql
+    image: mysql
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    env_file:
+      - ./docker/.env
+    environment:
+      MYSQL_DATABASE: quotes_api_test
+    tmpfs:
+      - /var/lib/mysql
+    ports:
+      - "3306"
+  test-redis:
+    container_name: test-redis
+    image: redis:alpine
+    ports:
+      - "6379"
+  test-php:
+    container_name: test-php
+    build: ./docker/php-fpm
+    entrypoint: ["/usr/local/bin/dockerize", "-wait", "tcp://test-mysql:3306", "-wait" ,"tcp://test-rabbitmq:5672", "-timeout", "20s"]
+    command: ["/usr/sbin/php-fpm7", "--nodaemonize"]
+    volumes:
+      - .:/home/ipresence/quotes_api
+    env_file:
+      - ./docker/.env
+    environment:
+      - APP_ENV=test
+    links:
+      - test-redis
+      - test-mysql
+      - test-rabbitmq
+  test-nginx:
+    container_name: test-nginx
+    build: ./docker/nginx
+    ports:
+      - "80"
+    volumes_from:
+      - test-php
+    env_file:
+      - ./docker/.env
+    environment:
+      - PHP_FPM_HOST=test-php
+    links:
+      - test-php
+  test-rabbitmq:
+    container_name: test-rabbitmq
+    hostname: rabbitmq
+    image: rabbitmq:3-management-alpine
+    env_file:
+      - ./docker/.env
+    ports:
+      - "5672"
+      - "15672"
+  test-worker:
+    build: ./docker/worker
+    command: ["supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
+    environment:
+      - APP_ENV=test
+    volumes:
+      - .:/home/ipresence/quotes_api
+    env_file:
+      - ./docker/.env
+    links:
+      - test-redis
+      - test-rabbitmq

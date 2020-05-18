@@ -1,0 +1,26 @@
+default:
+    suites:
+        default:
+            paths:
+                - '%paths.base%/tests/features'
+            contexts:
+                - QuotesAPI\Tests\Behat\QuotesApiContext
+                - Ulff\BehatRestApiExtension\Context\RestApiContext
+
+    extensions:
+        FriendsOfBehat\SymfonyExtension:
+            bootstrap: ~
+            kernel:
+                class: QuotesAPI\Infrastructure\Kernel
+                path: ~
+                environment: ~
+                debug: ~
+        Ulff\BehatRestApiExtension\ServiceContainer\BehatRestApiExtension: ~
+        Codifico\ParameterBagExtension\ServiceContainer\ParameterBagExtension:
+            parameter_bag:
+                class: Codifico\ParameterBagExtension\Bag\InMemoryPlaceholderBag
+        Behat\MinkExtension:
+            sessions:
+                symfony:
+                    symfony: ~
+            base_url: 'http://test-nginx'

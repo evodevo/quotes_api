@@ -1,0 +1,52 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    max_quotes_limit: 10
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    QuotesAPI\:
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    QuotesAPI\Infrastructure\Http\Controller\:
+        resource: '../src/Infrastructure/Http/Controller'
+        tags: ['controller.service_arguments']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    QuotesAPI\Infrastructure\Http\Controller\QuotesController:
+        class: QuotesAPI\Infrastructure\Http\Controller\QuotesController
+        tags: [controller.service_arguments]
+        bind:
+            $quotesQueryHandler: '@QuotesAPI\Application\Query\Shout\Handler\ValidatedQueryHandler'
+
+    QuotesAPI\Application\Query\Shout\Handler\ValidatedQueryHandler:
+        class: QuotesAPI\Application\Query\Shout\Handler\ValidatedQueryHandler
+        arguments:
+            $queryHandler: '@QuotesAPI\Application\Query\Shout\Handler\CachedQueryHandler'
+            $maxQuotesLimit: '%max_quotes_limit%'
+
+    QuotesAPI\Application\Query\Shout\Handler\CachedQueryHandler:
+        class: QuotesAPI\Application\Query\Shout\Handler\CachedQueryHandler
+        arguments:
+            $queryHandler: '@QuotesAPI\Application\Query\Shout\Handler\ShoutHandler'
+
+    Predis\Client:
+        factory: ['QuotesAPI\Infrastructure\Cache\RedisClientFactory', 'create']
+        arguments: ['%env(REDIS_DSN)%']
+
+    Ausi\SlugGenerator\SlugGenerator:
+        class: Ausi\SlugGenerator\SlugGenerator

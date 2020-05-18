@@ -1,0 +1,12 @@
+suites:
+  default:
+    spec_path: 'tests/'
+formatter.name: pretty
+extensions:
+  FriendsOfPhpSpec\PhpSpec\CodeCoverage\CodeCoverageExtension:
+    blacklist:
+      - src/Infrastructure/Persistence/Doctrine
+    blacklist_files:
+      - src/Infrastructure/Kernel.php
+    output:
+      html: build/phpspec-coverage

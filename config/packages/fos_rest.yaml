@@ -1,0 +1,13 @@
+# Read the documentation: https://symfony.com/doc/master/bundles/FOSRestBundle/index.html
+fos_rest:
+    param_fetcher_listener:  true
+    exception:
+        codes:
+            QuotesAPI\Application\Exception\InvalidArgumentException: 400
+            QuotesAPI\Application\Exception\OutOfRangeException: 400
+            QuotesAPI\Application\Exception\NotFoundException: 404
+            Symfony\Component\HttpKernel\Exception\NotFoundHttpException: 404
+            Doctrine\ORM\EntityNotFoundException: 404
+    format_listener:
+        rules:
+            - { path: ^/, prefer_extension: false, fallback_format: json, priorities: [ json ] }

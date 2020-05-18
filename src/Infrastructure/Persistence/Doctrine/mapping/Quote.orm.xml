@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                          http://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="QuotesAPI\Domain\Quote"
+            table="quotes"
+            repository-class="QuotesAPI\Infrastructure\Persistence\Doctrine\DoctrineQuoteRepository">
+        <id name="id" column="id" type="bigint">
+            <generator />
+        </id>
+        <field name="text" length="512" />
+        <many-to-one field="author" target-entity="QuotesAPI\Domain\Author" inversed-by="quotes">
+            <cascade>
+                <cascade-persist />
+            </cascade>
+            <join-column name="author_id" nullable="false" />
+        </many-to-one>
+    </entity>
+</doctrine-mapping>
