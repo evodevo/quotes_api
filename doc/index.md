@@ -171,7 +171,7 @@ across environments (qa, staging, production). The same artifact is reused for e
 to have a guarantee that the same thing that was built and tested was actually released.
 Each pipeline has one or more of the following stages:
 - **Build:** A successful build generates and stores an artifact - a package that is ready to be 
-deployed to an environment. The build is performed in the following steps:
+deployed to an environment. This stage performs the following steps:
     - Checks out source code from the repository.
     - Installs dependencies, compiles assets (if any).
     - Runs unit tests.
