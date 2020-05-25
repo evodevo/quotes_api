@@ -13,13 +13,14 @@ Create the following CI/CD pipelines:
 - **dev:** Build and test a new project version from master on every commit, store produced artifact in the artifact repository.
   - Triggered by source commits to master branch
   - Stages: build, test, deploy to dev server
-- **qa:** Deploy the selected build from the artifact repository to the QA server
+- **qa:** Deploy the selected build produced by the **dev** pipeline to the QA server.
   - Triggered manually by the QA
   - Stages: deploy selected artifact to QA server
-- **production:** Make a production build, store produced artifact in the artifact repository.
+- **production:** Make a production build, store produced artifact in the artifact repository, deploy to staging server,
+deploy to production server after manual approval.
   - Created automatically for every release branch
   - Triggered by source commits to the release branch
-  - Stages: build, test, deploy to staging server, deploy to production after manual approval
+  - Stages: build, test, deploy to staging, deploy to production
 
 The CI/CD pipelines should have one or more of the following stages:
 - **Build:** After a successful build, the produced artifact should be stored in the repository where it can be accessed by other stages. This stage should perform the following steps:
