@@ -64,7 +64,10 @@ Responsible for gathering requirements and, implementing, testing, and integrati
 
 **Risk**: Failing to finish development on time  
 **Preventive action**: Dividing the features into more manageable tasks, scheduling as much work in parallel 
-as possible, distributing the work evenly between team members to avoid overloading some team members
+as possible, distributing the work evenly between team members to avoid overloading some team members.
+In case there is a clear delay the following actions can be taken: either reduce project scope or add extra resources
+(bring more people, extend working hours). If project delay is the result of poor planning, it should be
+addressed and solved in the next retrospective meeting, so that the issue does not repeat.
 
 **Risk**: Bad communication between team members  
 **Preventive action**: Regular weekly meetings, the help from the Team Lead to coordinate the team.
@@ -98,23 +101,95 @@ prevent them from moving forward. More meetings can be arranged during the week 
 Every meeting has a person who leads the meeting. This team member should be prepared
 for the meeting. He should decide on the topics that will be discussed and write the summary of 
 the meeting afterwards which can be read by other interested parties. The meetings will be 
-held on Google Hangouts. Other non-urgent communication is done through project documentation
-which will be updated on a regular basis.
+held on Google Hangouts.  
+Other non-urgent communication is done through project documentation. All the changes to 
+project organization or processes need to be documented. The person introducing these 
+changes is also responsible for updating respective documentation. Developers are required to 
+write or update any required documentation in order for the User Story to be considered done. 
+QA is responsible for verifying that all required documentation was updated.
+
 
 ### Development workflow
 
-Git will be used for sharing and managing code. Development workflow is
-feature-based, therefore every feature will be developed and tested in a separate branch. 
-When a developer starts to work on a new feature, he creates a new feature branch 
-from master. It is encouraged to push changes to the main repository at least once a day. 
-When he finishes working on a feature, he creates a pull request to get his code reviewed
-by other team members. Finished feature is merged into development and later into staging and
-production branches. Every member is supposed to follow these established Git workflow policies.
+The goal is to enable a true Continuous Integration and have a tight feedback loop according
+to the Lean principles, therefore a modified version of trunk-based development workflow will be 
+used which involves short-lived feature branches and Pull-Request style code reviews. Large-scale 
+changes will be made using branch-by-abstraction. Unfinished features will be hidden from user 
+using feature toggles.  
+
+The following git branches will be used:
+- **feature branch:** Branched off from master when a new feature needs to be implemented.
+The lifetime of this branch should be as short as possible (couple of days at most) so that 
+small changes are applied incrementally without big merges and developers get fast feedback,
+and can iterate quickly.
+- **master branch:** A branch where all the developed features are integrated and tested by QA. 
+ All production release branches will be created from this branch.
+- **release branch:** A branch created off of master when its time for a new release. This is what
+gets deployed to staging for another round of QA testing and eventually to production.
+- **hotfix branch:** A branch made off of the release branch in case there is a problem that
+needs to be fixed after the release is created. 
+
+The development workflow is as follows:  
+- Developers make feature branches from master. 
+- While developing a feature developers run automated tests on their local machines to get a 
+quick feedback about the quality of their code. 
+- Whenever developers need feedback or when a feature is completed, they raise a Pull Request 
+to start a discussion. A pool of designated reviewers are assigned to this Pull Request. 
+The discussion in this Pull Request can also act as searchable documentation of the 
+implementation details of this particular feature.   
+- A CI pipeline is created automatically for every Pull Request so that CI build is 
+run on the feature branch before it is merged to master. So it is very unlikely that the build
+will break after the merge.
+- Commits are squashed when merging to master (by doing a squash-merge) so that we have a clean 
+history. We do *fast-forward only* merges so that there are no merge commits and the history on 
+master stays linear. The following merges are not allowed for feature branches:
+    - Merge to other developer's short-lived feature branches
+    - Direct merge to any of the release branches
+- After the feature branch is merged into the master and the CI build is successful, the branch 
+should be deleted. Developers are not allowed to break builds on master. If the build on master 
+is broken it is the first priority for the team to fix it.   
+- QA engineers can test the deployed build from master branch, covering the tasks up to a certain 
+commit or the latest commit. If the testing is done to the latest commit, a release branch can be 
+created from the tip of the master. Otherwise we can create the release branch from the commit 
+which the testing is completed up to.  
+- When a release branch is created from master, a CI build is run on it and it is deployed to a
+staging server. QA does another round of testing in a production-like environment possibly with 
+real (masked) data before promoting this release to production.  
+- If any bug is found at this point, a hotfix branch is created from the release branch. When the 
+fix is implemented it is merged into master and then back into the release branch. We do the 
+merging here instead of cherry-picking therefore it is important for developers to remember to 
+merge a hotfix to master also, otherwise we will have a regression in the next release.  
+- After the release is deployed to production successfully and smoke tests have passed, the old 
+release branch is deleted (if any).
+
+
+**CI/CD pipeline**
+ 
+Changes to source repository branches (feature, master, release, hotfix) trigger CI/CD 
+pipeline for that specific branch. The artifact that is built by the CI pipeline is promoted 
+across environments (qa, staging, production). The same artifact is reused for each environment 
+to have a guarantee that the same thing that was built and tested was actually released.
+Each pipeline has one or more of the following stages:
+- **Build:** A successful build generates and stores an artifact - a package that is ready to be 
+deployed to an environment. The build is performed in the following steps:
+    - Checks out source code from the repository.
+    - Installs dependencies, compiles assets (if any).
+    - Runs unit tests.
+    - Generates code coverage report. If code coverage is below the selected threshold the build
+     fails.
+    - Performs static code analysis (checks if coding standards are met, generates code metrics, 
+    checks for security vulnerabilities).  
+- **Test:** Runs acceptance tests on the previously built package.
+- **Deploy:** Deploys the previously built package to the selected environment.  
+After the pipeline is finished it sends notification about its success or failure.
+
 
 ### Software quality control
 
 Software quality is ensured by manual and automated testing. Developers are required to cover 
 software components with unit tests using phpspec. High test coverage is required (> 90%).
+Continuous Integration server generates coverage report for each build. If coverage is less
+then predefined threshold, the build fails.  
 QA engineers are responsible for creating a set of test cases and writing functional tests 
 using Behat. Automated tests are run on continuous integration server for every build and status of 
 every build is reported to Slack. Additionally manual testing is performed to catch 
@@ -130,6 +205,7 @@ The following criteria must be satisfied in order for any User Story to be consi
 - acceptance criteria met
 - functional tests passed
 - non-functional requirements met
+- all needed documentation written or updated
 - Product Owner accepts User Story
 
 
