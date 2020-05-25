@@ -1,4 +1,4 @@
-# iPresence Test Task
+# Quotes API Demo
 
 REST API that returns quotes shouted by famous persons.
 
@@ -24,6 +24,6 @@ To see the full commands list:
 make help
 ```
 
-Project development documentation is under `/doc` directory
+Project development documentation is under [/doc](https://github.com/evodevo/quotes_api/tree/master/doc/index.md) directory
 
 API documentation generated from Swagger annotations is available at `http://127.0.0.1:8080/doc`
