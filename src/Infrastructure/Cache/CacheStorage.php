@@ -15,12 +15,12 @@ interface CacheStorage
      * @param callable|null $callback
      * @return mixed
      */
-    public function get($key, callable $callback = null);
+    public function get(string $key, callable $callback = null);
 
     /**
      * @param $key
      * @param $value
      * @return mixed
      */
-    public function set($key, $value);
+    public function set(string $key, $value);
 }

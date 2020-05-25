@@ -91,14 +91,16 @@ class AsyncCacheStorage implements CacheStorage
      * @return mixed
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function get($key, callable $callback = null)
+    public function get(string $key, callable $callback = null)
     {
         $cacheItem = $this->cache->getItem($key);
 
         if (!$cacheItem->isHit() && $callback !== null) {
             $token  = $this->cacheLock->lock("$key:lock", CacheLock::DEFAULT_LOCK_TIMEOUT);
             if ($token !== null) {
-                $value = $callback($key, $token);
+                $value = $callback();
+
+                $this->setAsync($key, $value, $token);
 
                 return $value;
             } else {
@@ -114,7 +116,7 @@ class AsyncCacheStorage implements CacheStorage
      * @param $value
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function set($key, $value)
+    public function set(string $key, $value)
     {
         $cacheItem = $this->cache->getItem($key);
         $cacheItem->expiresAfter($this->cacheLifetime);
@@ -124,11 +126,21 @@ class AsyncCacheStorage implements CacheStorage
     }
 
     /**
+     * @param string $key
+     * @param $value
+     * @param string|null $token
+     */
+    protected function setAsync(string $key, $value, ?string $token)
+    {
+        $this->messageBus->dispatch(new CacheMessage($key, $value, $token));
+    }
+
+    /**
      * @param $key
      * @return \Symfony\Component\Cache\CacheItem
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    protected function waitForCacheEntry($key): CacheItemInterface
+    protected function waitForCacheEntry(string $key): CacheItemInterface
     {
         $attempts = $this->attempts;
         $cacheItem = $this->cache->getItem($key);

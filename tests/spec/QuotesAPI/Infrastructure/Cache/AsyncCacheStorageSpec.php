@@ -3,10 +3,13 @@
 namespace spec\QuotesAPI\Infrastructure\Cache;
 
 use PhpSpec\ObjectBehavior;
+use Prophecy\Argument;
 use QuotesAPI\Infrastructure\Cache\AsyncCacheStorage;
 use QuotesAPI\Infrastructure\Cache\CacheLock;
+use QuotesAPI\Infrastructure\Cache\CacheMessage;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use QuotesAPI\Tests\spec\QuotesAPI\Infrastructure\Cache\StubCacheItem;
@@ -64,17 +67,27 @@ class AsyncCacheStorageSpec extends ObjectBehavior
     /**
      * @param \PhpSpec\Wrapper\Collaborator|MockCallable $mockCallable
      * @param \PhpSpec\Wrapper\Collaborator|CacheLock $cacheLock
+     * @param \PhpSpec\Wrapper\Collaborator|MessageBusInterface $messageBus
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    function it_locks_and_updates_cache_on_cache_miss(MockCallable $mockCallable, CacheLock $cacheLock)
-    {
+    function it_locks_and_updates_cache_on_cache_miss(
+        MockCallable $mockCallable,
+        CacheLock $cacheLock,
+        MessageBusInterface $messageBus
+    ) {
         $cacheLock->lock('missing_key:lock', CacheLock::DEFAULT_LOCK_TIMEOUT)
             ->willReturn('missing_key:lock')->shouldBeCalled();
 
-        $mockCallable->__invoke('missing_key', 'missing_key:lock')->willReturn(null)->shouldBeCalled();
+        $cacheMessage = new CacheMessage('missing_key', 'calculated_value');
+
+        $messageBus->dispatch(Argument::type(CacheMessage::class))
+            ->willReturn(new Envelope($cacheMessage))
+            ->shouldBeCalled();
+
+        $mockCallable->__invoke()->willReturn('calculated_value')->shouldBeCalled();
 
         $result = $this->get('missing_key', $mockCallable);
-        $result->shouldBeNull();
+        $result->shouldBe('calculated_value');
     }
 
     /**

@@ -29,9 +29,9 @@ class CacheMessage
      * CacheMessage constructor.
      * @param string $key
      * @param $value
-     * @param null $token
+     * @param string|null $token
      */
-    public function __construct(string $key, $value, $token = null)
+    public function __construct(string $key, $value, string $token = null)
     {
         $this->key = $key;
         $this->value = $value;

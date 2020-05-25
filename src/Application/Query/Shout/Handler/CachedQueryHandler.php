@@ -7,9 +7,7 @@ namespace QuotesAPI\Application\Query\Shout\Handler;
 use QuotesAPI\Application\Exception\NotFoundException;
 use QuotesAPI\Application\Query\Shout\ShoutQuery;
 use QuotesAPI\Domain\QuoteRepository;
-use QuotesAPI\Infrastructure\Cache\CacheMessage;
 use QuotesAPI\Infrastructure\Cache\CacheStorage;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Class CachedQuotesQueryHandler
@@ -28,24 +26,14 @@ class CachedQueryHandler implements QueryHandler
     protected $cacheStorage;
 
     /**
-     * @var MessageBusInterface
-     */
-    protected $messageBus;
-
-    /**
      * CachedQuotesQueryHandler constructor.
      * @param QueryHandler $queryHandler
      * @param CacheStorage $cacheStorage
-     * @param MessageBusInterface $messageBus
      */
-    public function __construct(
-        QueryHandler $queryHandler,
-        CacheStorage $cacheStorage,
-        MessageBusInterface $messageBus
-    ) {
+    public function __construct(QueryHandler $queryHandler, CacheStorage $cacheStorage)
+    {
         $this->queryHandler = $queryHandler;
         $this->cacheStorage = $cacheStorage;
-        $this->messageBus = $messageBus;
     }
 
     /**
@@ -64,8 +52,8 @@ class CachedQueryHandler implements QueryHandler
 
         $quotes = $this->cacheStorage->get(
             $this->getCacheKey($authorSlug),
-            function($key, $token) use ($authorSlug) {
-                return $this->updateCache($key, $token, $authorSlug);
+            function() use ($authorSlug) {
+                return $this->getAuthorQuotes($authorSlug);
             }
         );
 
@@ -77,24 +65,18 @@ class CachedQueryHandler implements QueryHandler
     }
 
     /**
-     * @param $key
-     * @param $token
      * @param $authorSlug
-     * @return array
+     * @return array|null
      */
-    private function updateCache($key, $token, $authorSlug): array
+    private function getAuthorQuotes(string $authorSlug): ?array
     {
         try {
             $quotes = $this->queryHandler->handle(
                 new ShoutQuery($authorSlug, 0)
             );
         } catch (NotFoundException $e) {
-            $this->messageBus->dispatch(new CacheMessage($key, null, $token));
-
-            throw $e;
+            return null;
         }
-
-        $this->messageBus->dispatch(new CacheMessage($key, $quotes, $token));
 
         return $quotes;
     }
@@ -103,7 +85,7 @@ class CachedQueryHandler implements QueryHandler
      * @param $author
      * @return string
      */
-    private function getCacheKey($author): string
+    private function getCacheKey(string $author): string
     {
         return sprintf('author.%s.quotes', $author);
     }
