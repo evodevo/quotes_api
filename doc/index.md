@@ -183,6 +183,8 @@ deployed to an environment. This stage performs the following steps:
 - **Deploy:** Deploys the previously built package to the selected environment.  
 After the pipeline is finished it sends notification about its success or failure.
 
+The pipelines are defined in [DEVOPS4](https://github.com/evodevo/quotes_api/blob/master/doc/task_devops4.md)
+
 
 ### Software quality control
 
